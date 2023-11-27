@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "82682665964",
+    "project_id": "medicine-reminder-app-633ff",
+    "storage_bucket": "medicine-reminder-app-633ff.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:82682665964:android:25b4c55d17a1ca98bafec9",
+        "android_client_info": {
+          "package_name": "com.example.medication_reminder_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvUKVHUsDmLeAjVEVvXGmk8lZRmx7jbPI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
