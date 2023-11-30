@@ -7,7 +7,6 @@ Widget inputStyle({
   return TextField(
     decoration: InputDecoration(
       filled: true,
-      fillColor: Colors.grey[200],
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
         borderSide: BorderSide.none,
