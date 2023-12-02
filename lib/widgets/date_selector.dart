@@ -5,9 +5,9 @@ class DateSelector extends StatefulWidget {
   final String formattedDate;
 
   const DateSelector({
-    Key? key,
+    super.key,
     required this.formattedDate,
-  }) : super(key: key);
+  });
 
   @override
   DateSelectorState createState() => DateSelectorState();
