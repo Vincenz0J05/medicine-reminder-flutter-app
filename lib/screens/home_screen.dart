@@ -8,7 +8,7 @@ import '../widgets/footer.dart';
 import '../widgets/input_style.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -236,7 +236,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    onPressed: addReminder,
+                    onPressed: () {},
                     child: const Text(
                       'Done',
                       style: TextStyle(
