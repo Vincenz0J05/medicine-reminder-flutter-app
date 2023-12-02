@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class Footer extends StatefulWidget {
   final VoidCallback onButtonPressed;
 
-  const Footer({Key? key, required this.onButtonPressed}) : super(key: key);
+  const Footer({super.key, required this.onButtonPressed});
 
   @override
   State<Footer> createState() => _FooterState();
