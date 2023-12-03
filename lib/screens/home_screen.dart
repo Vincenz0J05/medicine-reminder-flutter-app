@@ -1,11 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:medication_reminder_app/widgets/add_reusable_time_field.dart';
+import 'package:medication_reminder_app/models/medicine.dart';
+import 'package:medication_reminder_app/widgets/time_input.dart';
 import 'package:medication_reminder_app/widgets/medication_card.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
 import '../widgets/date_selector.dart';
 import '../widgets/footer.dart';
 import '../widgets/input_style.dart';
+import '../services/medication_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -27,8 +30,6 @@ class _HomeScreenState extends State<HomeScreen> {
     'Sunday',
   ];
 
-  List<String> _selectedDays = [];
-
   List imageUrls = [
     'assets/images/—Pngtree—pharmacy drug health tablet pharmaceutical_6861618.png',
     'assets/images/black-outlined-bottle.png',
@@ -43,6 +44,11 @@ class _HomeScreenState extends State<HomeScreen> {
     'assets/images/white-tablet.png',
   ];
 
+  TextEditingController _medicationNameController = TextEditingController();
+  TextEditingController _quantityController = TextEditingController();
+  TextEditingController _doseController = TextEditingController();
+  List<String> _selectedDays = [];
+  List<Timestamp> _reminderTimes = [];
   String selectedImageUrl = '';
 
   void _showFormBottomSheet() {
@@ -53,6 +59,19 @@ class _HomeScreenState extends State<HomeScreen> {
         return _buildMedicationFormSheet(context);
       },
     );
+  }
+
+  void _updateReminderTime(List<Timestamp> times) {
+    setState(() {
+      _reminderTimes = times;
+    });
+  }
+
+  void _updateSelectedImageUrl(int index) {
+    setState(() {
+      selectedImageIndexNotifier.value = index;
+      selectedImageUrl = imageUrls[index]; // Update the selected image URL
+    });
   }
 
   Widget _buildMedicationFormSheet(BuildContext context) {
@@ -103,7 +122,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     inputStyle(
                       prefixIcon: Icons.medication_rounded,
                       hintText: 'Paracetamol/Hoestdrank',
-                    ),
+                      controller: _medicationNameController,
+                    )
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -116,9 +136,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           const Text('Hoeveelheid'),
                           const SizedBox(height: 8),
                           inputStyle(
-                            prefixIcon: Icons.medical_information,
-                            hintText: '1 pil/tablet',
-                          ),
+                              prefixIcon: Icons.medical_information,
+                              hintText: '1 pil/tablet',
+                              controller: _quantityController)
                         ],
                       ),
                     ),
@@ -132,9 +152,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             height: 8,
                           ),
                           inputStyle(
-                            prefixIcon: Icons.my_library_add_rounded,
-                            hintText: '500mg/ml',
-                          ),
+                              prefixIcon: Icons.my_library_add_rounded,
+                              hintText: '500mg/ml',
+                              controller: _doseController),
                         ],
                       ),
                     ),
@@ -170,7 +190,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                const TimeInputWidget(),
+                TimeInputWidget(
+                  onTimeChanged: _updateReminderTime,
+                ),
                 const SizedBox(height: 12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,8 +206,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         itemBuilder: (context, index) {
                           return GestureDetector(
                             onTap: () {
-                              // Update the selectedImageIndex immediately
-                              selectedImageIndexNotifier.value = index;
+                              _updateSelectedImageUrl(
+                                  index); // Update the selected image URL
                             },
                             child: ValueListenableBuilder<int>(
                               valueListenable: selectedImageIndexNotifier,
@@ -193,7 +215,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 return Container(
                                   width: 80,
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0),
+                                    horizontal: 8.0,
+                                  ),
                                   decoration: BoxDecoration(
                                     border: Border.all(
                                       color: selectedImageIndex == index
@@ -236,9 +259,25 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    onPressed: () {},
+                    onPressed: () async {
+                      Medicine medicine = Medicine(
+                        name: _medicationNameController.text,
+                        dosage: _doseController.text,
+                        image: selectedImageUrl,
+                        days: _selectedDays,
+                        reminderTime: _reminderTimes,
+                        amount: _quantityController.text,
+                      );
+
+                      print('Medicine object: ${medicine.toJson()}');
+
+                      MedicationService medicationService = MedicationService();
+                      await medicationService.createMedicine(medicine);
+
+                      Navigator.pop(context);
+                    },
                     child: const Text(
-                      'Done',
+                      'Klaar',
                       style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.normal,
@@ -254,20 +293,18 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void addReminder() {
-    // Implement your logic for adding a reminder
-  }
-
   @override
   Widget build(BuildContext context) {
     String formattedDate = DateFormat('d MMMM').format(DateTime.now());
 
     return Scaffold(
-      body: Column(
-        children: [
-          DateSelector(formattedDate: formattedDate),
-          const MedicationCard()
-        ],
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            DateSelector(formattedDate: formattedDate),
+            const MedicationCard(),
+          ],
+        ),
       ),
       bottomNavigationBar: Footer(
         onButtonPressed: _showFormBottomSheet,
