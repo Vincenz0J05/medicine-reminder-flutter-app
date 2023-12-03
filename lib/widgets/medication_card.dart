@@ -1,23 +1,70 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:medication_reminder_app/models/medicine.dart';
+import '../services/medication_service.dart';
 
-class MedicationCard extends StatefulWidget {
-
+class MedicationCard extends StatelessWidget {
   const MedicationCard({super.key});
 
   @override
-  MedicationCardState createState() => MedicationCardState();
-}
-
-class MedicationCardState extends State<MedicationCard> {
-  @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          _buildHeader(),
-          _buildMedicationCard(context),
-        ],
-      ),
+    return StreamBuilder<QuerySnapshot>(
+      stream: MedicationService().fetchMedicine(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        }
+
+        if (!snapshot.hasData) {
+          return const CircularProgressIndicator();
+        }
+
+        final medications = snapshot.data!.docs.map((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          return Medicine.fromJson(
+              data); // Assuming you have a fromJson constructor in Medicine model
+        }).toList();
+
+        return Column(
+          children: [
+            _buildHeader(),
+            Column(
+              children: medications.map((medicine) {
+                return _buildMedicationCard(context, medicine);
+              }).toList(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildMedicationCard(BuildContext context, Medicine medicine) {
+    // Convert Timestamp to DateTime
+    DateTime reminderDateTime = medicine.reminderTime[0].toDate();
+    // Format the DateTime to only show hours and minutes
+    String formattedTime = DateFormat('HH:mm').format(reminderDateTime);
+
+    return Column(
+      children: [
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          height: 100,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: const Color(0xFFeff0f4),
+            borderRadius: BorderRadius.circular(25),
+          ),
+          child: Row(
+            children: [
+              _buildImageContainer(medicine.image),
+              _buildMedicationDetails(
+                  medicine.name, medicine.dosage, formattedTime),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -32,25 +79,7 @@ class MedicationCardState extends State<MedicationCard> {
     );
   }
 
-  Widget _buildMedicationCard(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 18),
-      height: 100,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: const Color(0xFFeff0f4),
-        borderRadius: BorderRadius.circular(25),
-      ),
-      child: Row(
-        children: [
-          _buildImageContainer(),
-          _buildMedicationDetails(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildImageContainer() {
+  Widget _buildImageContainer(String imageUrl) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
@@ -60,54 +89,33 @@ class MedicationCardState extends State<MedicationCard> {
           borderRadius: BorderRadius.circular(10),
           color: Colors.white,
         ),
-        child: Image.asset('assets/images/black-outlined-bottle.png'),
+        child: Image.asset(imageUrl), // Use the provided image URL
       ),
     );
   }
 
-  Widget _buildMedicationDetails() {
+  Widget _buildMedicationDetails(
+      String name, String dosage, String formattedTime) {
     return Expanded(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Medication Name, Dosage',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildTimeRow(),
-              _buildInfoIcon(),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTimeRow() {
-    return const Row(
-      children: [
-        Icon(Icons.access_time_filled, size: 15),
-        SizedBox(width: 5),
-        Text('Time Here'),
-      ],
-    );
-  }
-
-  Widget _buildInfoIcon() {
-    return Padding(
-      padding: const EdgeInsets.only(right: 10),
-      child: InkWell(
-        onTap: () {
-          // Action for info icon tap
-        },
-        child: const Icon(
-          Icons.info,
-          color: Color(0xffeb6081),
+      child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '$name, $dosage',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Icon(Icons.access_time_filled, size: 15),
+                const SizedBox(width: 5),
+                Text(formattedTime),
+              ],
+            ),
+          ],
         ),
       ),
     );
