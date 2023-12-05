@@ -269,8 +269,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         amount: _quantityController.text,
                       );
 
-                      print('Medicine object: ${medicine.toJson()}');
-
                       MedicationService medicationService = MedicationService();
                       await medicationService.createMedicine(medicine);
 
