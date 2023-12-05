@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import '../models/medicine.dart';
 
 class MedicationService {
@@ -12,9 +13,13 @@ class MedicationService {
   Future<void> createMedicine(Medicine medicine) async {
     try {
       await medicineCollection.add(medicine.toJson());
-      print('Medicine added successfully.');
+      if (kDebugMode) {
+        print('Medicine added successfully.');
+      }
     } catch (e) {
-      print('Error adding medicine: $e');
+      if (kDebugMode) {
+        print('Error adding medicine: $e');
+      }
     }
   }
 }
