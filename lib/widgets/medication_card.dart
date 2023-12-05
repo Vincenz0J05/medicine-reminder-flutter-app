@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:medication_reminder_app/models/medicine.dart';
 import '../services/medication_service.dart';
+import '../screens/medication_info_screen.dart';
 
 class MedicationCard extends StatelessWidget {
   const MedicationCard({super.key});
@@ -60,7 +61,7 @@ class MedicationCard extends StatelessWidget {
             children: [
               _buildImageContainer(medicine.image),
               _buildMedicationDetails(
-                  medicine.name, medicine.dosage, formattedTime),
+                  context, medicine.name, medicine.dosage, formattedTime, medicine),
             ],
           ),
         ),
@@ -94,11 +95,11 @@ class MedicationCard extends StatelessWidget {
     );
   }
 
-  Widget _buildMedicationDetails(
-      String name, String dosage, String formattedTime) {
+  Widget _buildMedicationDetails(BuildContext context, name, String dosage,
+      String formattedTime, Medicine medicine) {
     return Expanded(
       child: Padding(
-        padding: const EdgeInsets.all(10.0),
+        padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,12 +108,31 @@ class MedicationCard extends StatelessWidget {
               '$name, $dosage',
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(
+                height: 4), // Space between the text and the time row
             Row(
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                const Icon(Icons.access_time_filled, size: 15),
+                const Icon(Icons.access_time_filled, size: 16),
                 const SizedBox(width: 5),
-                Text(formattedTime),
+                Text(
+                  formattedTime,
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const Spacer(), // This will push the IconButton to the far right
+                IconButton(
+                  icon: const Icon(
+                    Icons.info,
+                    size: 18,
+                    color: Color(0xffeb6081),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => MedicationDetailsPage(
+                              medicine: medicine,
+                            )));
+                  },
+                ),
               ],
             ),
           ],
