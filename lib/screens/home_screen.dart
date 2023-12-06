@@ -11,7 +11,8 @@ import '../widgets/input_style.dart';
 import '../services/medication_service.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final Medicine? medicineToEdit;
+  const HomeScreen({super.key, this.medicineToEdit});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -73,6 +74,24 @@ class _HomeScreenState extends State<HomeScreen> {
       selectedImageUrl = imageUrls[index]; // Update the selected image URL
     });
   }
+
+  @override
+void initState() {
+  super.initState();
+  if (widget.medicineToEdit != null) {
+    _medicationNameController.text = widget.medicineToEdit!.name;
+    _quantityController.text = widget.medicineToEdit!.amount;
+    _doseController.text = widget.medicineToEdit!.dosage;
+    _selectedDays = widget.medicineToEdit!.days;
+    _reminderTimes = widget.medicineToEdit!.reminderTime;
+    selectedImageUrl = widget.medicineToEdit!.image;
+    // Trigger the bottom sheet to show after the build is complete
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showFormBottomSheet();
+    });
+  }
+}
+
 
   Widget _buildMedicationFormSheet(BuildContext context) {
     return SizedBox(
@@ -260,9 +279,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     onPressed: () async {
-                      try {
-                        print('Klaar button pressed'); // Debug print
+                      if (_formKey.currentState!.validate()) {
                         Medicine medicine = Medicine(
+                          id: widget.medicineToEdit
+                              ?.id, // Use existing ID if in update mode
                           name: _medicationNameController.text,
                           dosage: _doseController.text,
                           image: selectedImageUrl,
@@ -270,13 +290,24 @@ class _HomeScreenState extends State<HomeScreen> {
                           reminderTime: _reminderTimes,
                           amount: _quantityController.text,
                         );
+
                         MedicationService medicationService =
                             MedicationService();
-                        await medicationService.createMedicine(medicine);
-                        print('Medicine created successfully');
-                        Navigator.pop(context);
-                      } catch (e) {
-                        print('Failed to create medicine: $e');
+
+                        try {
+                          if (widget.medicineToEdit == null) {
+                            // Create mode
+                            await medicationService.createMedicine(medicine);
+                            print('Medicine created successfully');
+                          } else {
+                            // Update mode
+                            await medicationService.updateMedicine(medicine);
+                            print('Medicine updated successfully');
+                          }
+                          Navigator.pop(context);
+                        } catch (e) {
+                          print('Error processing medicine: $e');
+                        }
                       }
                     },
                     child: const Text(

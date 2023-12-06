@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medication_reminder_app/screens/home_screen.dart';
 import 'package:medication_reminder_app/services/medication_service.dart';
 import '../models/medicine.dart'; // Make sure this import path is correct
 
@@ -86,11 +87,13 @@ class MedicationDetailsPageState extends State<MedicationDetailsPage> {
                         .pop(); // Go back to the previous screen
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                          content: Text('Medicijne succesvol verwijderd')),
+                          content: Text('Medicijn succesvol verwijderd')),
                     );
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Niet gelukt om het medicijne te verwijderen: $e')),
+                      SnackBar(
+                          content: Text(
+                              'Niet gelukt om het medicijne te verwijderen: $e')),
                     );
                   }
                 } else {
@@ -166,8 +169,14 @@ class MedicationDetailsPageState extends State<MedicationDetailsPage> {
                       color: Colors.red,
                     ),
                     onPressed: () {
-                      //TODO add update operation
-                    }, // Icon color
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              HomeScreen(medicineToEdit: widget.medicine),
+                        ),
+                      );
+                    },
                   ),
                 )
               ],

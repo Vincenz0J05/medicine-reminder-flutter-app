@@ -11,19 +11,20 @@ class MedicationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-  stream: MedicationService().fetchMedicine(),
-  builder: (context, snapshot) {
-    if (snapshot.hasError) {
-      return Text('Error: ${snapshot.error}');
-    }
+      stream: MedicationService().fetchMedicine(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        }
 
-    if (!snapshot.hasData) {
-      return const CircularProgressIndicator();
-    }
+        if (!snapshot.hasData) {
+          return const CircularProgressIndicator();
+        }
 
-    final medications = snapshot.data!.docs.map((doc) {
-      return Medicine.fromFirestore(doc); // Use the fromFirestore constructor here
-    }).toList();
+        final medications = snapshot.data!.docs.map((doc) {
+          return Medicine.fromFirestore(
+              doc); // Use the fromFirestore constructor here
+        }).toList();
 
         return Column(
           children: [
@@ -40,28 +41,31 @@ class MedicationCard extends StatelessWidget {
   }
 
   Widget _buildMedicationCard(BuildContext context, Medicine medicine) {
-    DateTime reminderDateTime = medicine.reminderTime[0].toDate();
+    // Convert Timestamp to DateTime and format the time
+    DateTime reminderDateTime = medicine.reminderTime.isNotEmpty
+        ? medicine.reminderTime.first
+            .toDate() // Make sure to check if reminderTime is not empty
+        : DateTime.now(); // Fallback to current time if no reminder time
     String formattedTime = DateFormat('HH:mm').format(reminderDateTime);
 
-    return Column(
-      children: [
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          height: 100,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: const Color(0xFFeff0f4),
-            borderRadius: BorderRadius.circular(25),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      height: 100,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: const Color(0xFFeff0f4),
+        borderRadius: BorderRadius.circular(25),
+      ),
+      child: Row(
+        children: [
+          _buildImageContainer(medicine.image),
+          Expanded(
+            // Wrap your details in an Expanded widget to take up remaining space
+            child: _buildMedicationDetails(context, medicine,
+                formattedTime), // Pass context and medicine here
           ),
-          child: Row(
-            children: [
-              _buildImageContainer(medicine.image),
-              _buildMedicationDetails(context, medicine,
-                  formattedTime), // Pass context and medicine here
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -115,7 +119,9 @@ class MedicationCard extends StatelessWidget {
                   Text(formattedTime),
                 ],
               ),
-              const SizedBox(width: 100,),
+              const SizedBox(
+                width: 100,
+              ),
               IconButton(
                 icon: const Icon(
                   Icons.info,
