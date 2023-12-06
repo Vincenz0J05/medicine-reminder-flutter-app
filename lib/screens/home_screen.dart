@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:medication_reminder_app/models/medicine.dart';
@@ -45,9 +46,9 @@ class _HomeScreenState extends State<HomeScreen> {
     'assets/images/white-tablet.png',
   ];
 
-  TextEditingController _medicationNameController = TextEditingController();
-  TextEditingController _quantityController = TextEditingController();
-  TextEditingController _doseController = TextEditingController();
+  final TextEditingController _medicationNameController = TextEditingController();
+  final TextEditingController _quantityController = TextEditingController();
+  final TextEditingController _doseController = TextEditingController();
   List<String> _selectedDays = [];
   List<Timestamp> _reminderTimes = [];
   String selectedImageUrl = '';
@@ -298,15 +299,21 @@ void initState() {
                           if (widget.medicineToEdit == null) {
                             // Create mode
                             await medicationService.createMedicine(medicine);
-                            print('Medicine created successfully');
+                            if (kDebugMode) {
+                              print('Medicine created successfully');
+                            }
                           } else {
                             // Update mode
                             await medicationService.updateMedicine(medicine);
-                            print('Medicine updated successfully');
+                            if (kDebugMode) {
+                              print('Medicine updated successfully');
+                            }
                           }
                           Navigator.pop(context);
                         } catch (e) {
-                          print('Error processing medicine: $e');
+                          if (kDebugMode) {
+                            print('Error processing medicine: $e');
+                          }
                         }
                       }
                     },
