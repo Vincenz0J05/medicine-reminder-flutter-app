@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Medicine {
-  String? id; // id is nullable because Firestore will generate it
+  String? id; // id should be nullable
   String name;
   String dosage;
   String image;
@@ -10,7 +10,7 @@ class Medicine {
   String amount;
 
   Medicine({
-    this.id,
+    this.id, // id is now nullable and not required
     required this.name,
     required this.dosage,
     required this.image,
@@ -25,22 +25,24 @@ class Medicine {
       'dosage': dosage,
       'image': image,
       'days': days,
-      'reminder_time':
-          reminderTime.map((e) => e.toDate().toIso8601String()).toList(),
+      'reminder_time': reminderTime,
       'amount': amount,
     };
   }
 
-  factory Medicine.fromJson(Map<String, dynamic> json) {
-    return Medicine(
-      name: json['name'],
-      dosage: json['dosage'],
-      image: json['image'],
-      days: List<String>.from(json['days']),
-      reminderTime: (json['reminder_time'] as List)
-          .map((item) => Timestamp.fromDate(DateTime.parse(item)))
-          .toList(),
-      amount: json['amount'],
-    );
-  }
+  factory Medicine.fromFirestore(DocumentSnapshot doc) {
+  Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+  return Medicine(
+    id: doc.id,
+    name: data['name'],
+    dosage: data['dosage'],
+    image: data['image'],
+    days: List<String>.from(data['days']),
+    reminderTime: data['reminder_time'] is List
+        ? (data['reminder_time'] as List).map((item) => item as Timestamp).toList()
+        : [], // Handle it as a list of Timestamps
+    amount: data['amount'],
+  );
+}
+
 }
