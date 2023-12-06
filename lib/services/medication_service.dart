@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import '../models/medicine.dart';
 
 class MedicationService {
@@ -10,16 +9,18 @@ class MedicationService {
     return medicineCollection.snapshots();
   }
 
-  Future<void> createMedicine(Medicine medicine) async {
+  Future<String> createMedicine(Medicine medicine) async {
+    DocumentReference docRef = await medicineCollection.add(medicine.toJson());
+    print(docRef.id);
+    return docRef.id; // Return the generated ID of the new document
+  }
+
+  Future<void> deleteMedicine(String id) async {
     try {
-      await medicineCollection.add(medicine.toJson());
-      if (kDebugMode) {
-        print('Medicine added successfully.');
-      }
+      await medicineCollection.doc(id).delete();
+      print('Medicine deleted succesfully');
     } catch (e) {
-      if (kDebugMode) {
-        print('Error adding medicine: $e');
-      }
+      print('Error deleting medicine: $e');
     }
   }
 }

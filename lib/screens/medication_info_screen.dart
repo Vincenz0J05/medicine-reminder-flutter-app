@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medication_reminder_app/services/medication_service.dart';
 import '../models/medicine.dart'; // Make sure this import path is correct
 
 class MedicationDetailsPage extends StatefulWidget {
@@ -45,9 +46,59 @@ class MedicationDetailsPageState extends State<MedicationDetailsPage> {
               color: Color(0xffeb6081),
               size: 30,
             ),
-            onPressed: () {
-              // TODO: Implement the trash icon functionality
-              print('Trash icon tapped');
+            onPressed: () async {
+              // Confirm before deleting
+              bool confirmDelete = await showDialog(
+                context: context,
+                builder: (BuildContext dialogContext) {
+                  return AlertDialog(
+                    title: const Text('Verijder herrinering'),
+                    content: const Text(
+                        'Weet u zeker dat u deze herrinering wilt verwijderen?'),
+                    actions: <Widget>[
+                      TextButton(
+                        child: const Text('Verwijder'),
+                        onPressed: () {
+                          Navigator.of(dialogContext)
+                              .pop(true); // Dismiss and return true
+                        },
+                      ),
+                      TextButton(
+                        child: const Text('Annuleer'),
+                        onPressed: () {
+                          Navigator.of(dialogContext)
+                              .pop(false); // Dismiss and return false
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+
+              // If delete is confirmed
+              if (confirmDelete) {
+                String? medicineId = widget.medicine.id;
+                if (medicineId != null) {
+                  try {
+                    MedicationService medicationService = MedicationService();
+                    await medicationService.deleteMedicine(medicineId);
+                    Navigator.of(context)
+                        .pop(); // Go back to the previous screen
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Medicijne succesvol verwijderd')),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Niet gelukt om het medicijne te verwijderen: $e')),
+                    );
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Medicine ID is null')),
+                  );
+                }
+              }
             },
           ),
         ],
@@ -134,22 +185,33 @@ class MedicationDetailsPageState extends State<MedicationDetailsPage> {
                       color: const Color(0xFFeff0f4),
                     ),
                     child: Center(
-                      child: Row(
-                        children: [
-                          const SizedBox(width: 10,),
-                          const Icon(Icons.medication, color: Color(0xffe83395), size: 30,),
-                          const SizedBox(width: 10,),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(widget.medicine.dosage, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
-                              const Text(' Dagdosis')
-                            ],
-                          )
-                        ],
-                      )
-                    ),
+                        child: Row(
+                      children: [
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        const Icon(
+                          Icons.medication,
+                          color: Color(0xffe83395),
+                          size: 30,
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.medicine.dosage,
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            const Text('Dagdosis')
+                          ],
+                        )
+                      ],
+                    )),
                   ),
                 ),
                 const SizedBox(
@@ -165,18 +227,30 @@ class MedicationDetailsPageState extends State<MedicationDetailsPage> {
                     child: Center(
                       child: Row(
                         children: [
-                          const SizedBox(width: 10,),
-                          const Icon(Icons.watch_later, color: Color(0xff1d71d2), size: 30,),
-                          const SizedBox(width: 10,),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          const Icon(
+                            Icons.watch_later,
+                            color: Color(0xff1d71d2),
+                            size: 30,
+                          ),
+                          const SizedBox(
+                            width: 10,
+                          ),
                           Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(widget.medicine.amount, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+                              Text(
+                                widget.medicine.amount,
+                                style: const TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
                               const Text('Elke dag')
                             ],
                           )
-                        ],                        
+                        ],
                       ),
                     ),
                   ),

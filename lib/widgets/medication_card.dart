@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:medication_reminder_app/models/medicine.dart';
+import 'package:medication_reminder_app/screens/medication_info_screen.dart';
 import '../services/medication_service.dart';
 
 class MedicationCard extends StatelessWidget {
@@ -10,21 +11,19 @@ class MedicationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      stream: MedicationService().fetchMedicine(),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
-        }
+  stream: MedicationService().fetchMedicine(),
+  builder: (context, snapshot) {
+    if (snapshot.hasError) {
+      return Text('Error: ${snapshot.error}');
+    }
 
-        if (!snapshot.hasData) {
-          return const CircularProgressIndicator();
-        }
+    if (!snapshot.hasData) {
+      return const CircularProgressIndicator();
+    }
 
-        final medications = snapshot.data!.docs.map((doc) {
-          final data = doc.data() as Map<String, dynamic>;
-          return Medicine.fromJson(
-              data); // Assuming you have a fromJson constructor in Medicine model
-        }).toList();
+    final medications = snapshot.data!.docs.map((doc) {
+      return Medicine.fromFirestore(doc); // Use the fromFirestore constructor here
+    }).toList();
 
         return Column(
           children: [
@@ -41,9 +40,7 @@ class MedicationCard extends StatelessWidget {
   }
 
   Widget _buildMedicationCard(BuildContext context, Medicine medicine) {
-    // Convert Timestamp to DateTime
     DateTime reminderDateTime = medicine.reminderTime[0].toDate();
-    // Format the DateTime to only show hours and minutes
     String formattedTime = DateFormat('HH:mm').format(reminderDateTime);
 
     return Column(
@@ -59,8 +56,8 @@ class MedicationCard extends StatelessWidget {
           child: Row(
             children: [
               _buildImageContainer(medicine.image),
-              _buildMedicationDetails(
-                  medicine.name, medicine.dosage, formattedTime),
+              _buildMedicationDetails(context, medicine,
+                  formattedTime), // Pass context and medicine here
             ],
           ),
         ),
@@ -95,28 +92,50 @@ class MedicationCard extends StatelessWidget {
   }
 
   Widget _buildMedicationDetails(
-      String name, String dosage, String formattedTime) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '$name, $dosage',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                const Icon(Icons.access_time_filled, size: 15),
-                const SizedBox(width: 5),
-                Text(formattedTime),
-              ],
-            ),
-          ],
-        ),
+      BuildContext context, Medicine medicine, String formattedTime) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${medicine.name}, ${medicine.dosage}',
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.access_time_filled, size: 15),
+                  Text(formattedTime),
+                ],
+              ),
+              const SizedBox(width: 100,),
+              IconButton(
+                icon: const Icon(
+                  Icons.info,
+                  size: 18,
+                  color: Color(0xffeb6081),
+                ),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          MedicationDetailsPage(medicine: medicine),
+                    ),
+                  );
+                },
+                padding: const EdgeInsets.all(0),
+                constraints: const BoxConstraints(),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

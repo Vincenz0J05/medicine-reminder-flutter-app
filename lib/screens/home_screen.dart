@@ -260,19 +260,24 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     onPressed: () async {
-                      Medicine medicine = Medicine(
-                        name: _medicationNameController.text,
-                        dosage: _doseController.text,
-                        image: selectedImageUrl,
-                        days: _selectedDays,
-                        reminderTime: _reminderTimes,
-                        amount: _quantityController.text,
-                      );
-
-                      MedicationService medicationService = MedicationService();
-                      await medicationService.createMedicine(medicine);
-
-                      Navigator.pop(context);
+                      try {
+                        print('Klaar button pressed'); // Debug print
+                        Medicine medicine = Medicine(
+                          name: _medicationNameController.text,
+                          dosage: _doseController.text,
+                          image: selectedImageUrl,
+                          days: _selectedDays,
+                          reminderTime: _reminderTimes,
+                          amount: _quantityController.text,
+                        );
+                        MedicationService medicationService =
+                            MedicationService();
+                        await medicationService.createMedicine(medicine);
+                        print('Medicine created successfully');
+                        Navigator.pop(context);
+                      } catch (e) {
+                        print('Failed to create medicine: $e');
+                      }
                     },
                     child: const Text(
                       'Klaar',
