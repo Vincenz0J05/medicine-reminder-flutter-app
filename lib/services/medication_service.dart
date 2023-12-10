@@ -1,14 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:intl/intl.dart';
 import '../models/medicine.dart';
 
 class MedicationService {
   final CollectionReference medicineCollection =
       FirebaseFirestore.instance.collection('medicine');
 
-  Stream<QuerySnapshot> fetchMedicine() {
-    return medicineCollection.snapshots();
-  }
+ Stream<QuerySnapshot> fetchMedicine(DateTime date) {
+  // Use DateFormat('EEEE') to get the full name of the day of the week.
+  String dayOfWeek = DateFormat('EEEE').format(date);
+
+  // Query the collection for documents where the 'days' array contains the dayOfWeek
+  return medicineCollection.where('days', arrayContains: dayOfWeek).snapshots();
+}
+
 
   Future<String> createMedicine(Medicine medicine) async {
     DocumentReference docRef = await medicineCollection.add(medicine.toJson());
