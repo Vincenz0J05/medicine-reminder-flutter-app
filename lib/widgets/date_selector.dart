@@ -1,38 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+// A StatefulWidget that allows users to select a date.
 class DateSelector extends StatefulWidget {
-  final Function(DateTime) onDateSelected; // Add a callback for date selection
-  final String formattedDate; // Add formattedDate as a member variable
+  // Callback function to be called when a date is selected.
+  final Function(DateTime) onDateSelected;
+  // Formatted date string to display.
+  final String formattedDate;
 
+  // Constructor with required fields.
   const DateSelector({
     super.key,
     required this.onDateSelected,
-    required this.formattedDate, // Make it required or provide a default value
+    required this.formattedDate,
   });
 
   @override
   DateSelectorState createState() => DateSelectorState();
 }
 
+// State class for DateSelector.
 class DateSelectorState extends State<DateSelector> {
+  // Holds the currently selected date.
   DateTime _selectedDate = DateTime.now();
-  bool _isExpanded = true; // Define the isExpanded variable
+  // Controls the expansion state of the ExpansionTile.
+  bool _isExpanded = true;
 
+  // Handles tap events on date tiles.
   void _onDateTap(DateTime date) {
     setState(() {
       _selectedDate = date;
     });
-    widget.onDateSelected(date); // Call the callback with the selected date
+    widget.onDateSelected(date); // Trigger callback with selected date.
   }
 
+  // Builds a tile representing a single date.
   Widget _buildDateTile(DateTime date, bool isSelected) {
-    final dateNumber = DateFormat('d').format(date);
-    final day = DateFormat('EEE').format(date).substring(0, 3);
+    final dateNumber = DateFormat('d').format(date); // Extracts the day number.
+    final day = DateFormat('EEE')
+        .format(date)
+        .substring(0, 3); // Extracts the day's name.
 
     return GestureDetector(
       onTap: () => _onDateTap(date),
       child: Container(
+        // Styling for the date tile.
         margin: const EdgeInsets.symmetric(horizontal: 5),
         width: 60,
         decoration: BoxDecoration(
@@ -74,7 +86,7 @@ class DateSelectorState extends State<DateSelector> {
             data: ThemeData(dividerColor: Colors.transparent),
             child: Material(
               color: Colors
-                  .transparent, // Set the color of Material to transparent
+                  .transparent, // Makes Material widget background transparent.
               child: ExpansionTile(
                 onExpansionChanged: (bool expanded) {
                   setState(() {
@@ -90,7 +102,7 @@ class DateSelectorState extends State<DateSelector> {
                   ),
                 ),
                 title: Text(
-                  'Today, ${widget.formattedDate}', // Now the formattedDate is passed correctly
+                  'Today, ${widget.formattedDate}', // Displaying formatted date.
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 20.0,
@@ -102,7 +114,8 @@ class DateSelectorState extends State<DateSelector> {
                     height: 90,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
-                      itemCount: 7,
+                      itemCount:
+                          7, // Builds a list of 7 days starting from today.
                       itemBuilder: (BuildContext context, int index) {
                         DateTime date =
                             DateTime.now().add(Duration(days: index));
@@ -119,6 +132,7 @@ class DateSelectorState extends State<DateSelector> {
   }
 }
 
+// Extension on DateTime to check if two dates are the same day.
 extension DateTimeExtension on DateTime {
   bool isSameDay(DateTime other) {
     return year == other.year && month == other.month && day == other.day;

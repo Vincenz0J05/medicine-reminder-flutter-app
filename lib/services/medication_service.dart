@@ -3,24 +3,28 @@ import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import '../models/medicine.dart';
 
+// A service class for handling medication data operations with Firestore.
 class MedicationService {
+  // Reference to the 'medicine' collection in Firestore.
   final CollectionReference medicineCollection =
       FirebaseFirestore.instance.collection('medicine');
 
- Stream<QuerySnapshot> fetchMedicine(DateTime date) {
-  // Use DateFormat('EEEE') to get the full name of the day of the week.
-  String dayOfWeek = DateFormat('EEEE').format(date);
+  // Fetches medicines from Firestore based on the day of the week.
+  Stream<QuerySnapshot> fetchMedicine(DateTime date) {
+    // Formats the date to get the full name of the day of the week.
+    String dayOfWeek = DateFormat('EEEE').format(date);
 
-  // Query the collection for documents where the 'days' array contains the dayOfWeek
-  return medicineCollection.where('days', arrayContains: dayOfWeek).snapshots();
-}
-
-
-  Future<String> createMedicine(Medicine medicine) async {
-    DocumentReference docRef = await medicineCollection.add(medicine.toJson());
-    return docRef.id; // Return the generated ID of the new document
+    // Returns a stream of snapshots containing medicines for the given day.
+    return medicineCollection.where('days', arrayContains: dayOfWeek).snapshots();
   }
 
+  // Creates a new medicine document in Firestore and returns its ID.
+  Future<String> createMedicine(Medicine medicine) async {
+    DocumentReference docRef = await medicineCollection.add(medicine.toJson());
+    return docRef.id; // Returns the generated ID of the new document.
+  }
+
+  // Updates an existing medicine document in Firestore.
   Future<void> updateMedicine(Medicine medicine) async {
     if (medicine.id == null) {
       throw Exception("Medicine ID is null");
@@ -38,11 +42,12 @@ class MedicationService {
     }
   }
 
+  // Deletes a medicine document from Firestore using its ID.
   Future<void> deleteMedicine(String id) async {
     try {
       await medicineCollection.doc(id).delete();
       if (kDebugMode) {
-        print('Medicine deleted succesfully');
+        print('Medicine deleted successfully');
       }
     } catch (e) {
       if (kDebugMode) {

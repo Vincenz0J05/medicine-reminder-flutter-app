@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:medication_reminder_app/screens/home_screen.dart';
 import 'package:medication_reminder_app/services/medication_service.dart';
-import '../models/medicine.dart'; // Make sure this import path is correct
+import '../models/medicine.dart';
 
 class MedicationDetailsPage extends StatefulWidget {
   final Medicine medicine;
@@ -20,7 +20,7 @@ class MedicationDetailsPageState extends State<MedicationDetailsPage> {
 
     // Calculate the size of the image
     var imageWidth =
-        screenSize.width * 0.5; // for example 50% of the screen width
+        screenSize.width * 0.5; // for example, 50% of the screen width
     var imageHeight =
         imageWidth * (3 / 4); // maintain the aspect ratio of the image
 
@@ -114,6 +114,8 @@ class MedicationDetailsPageState extends State<MedicationDetailsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: screenSize.height * 0.02), // space from the top
+
+            // Display the medication image
             SizedBox(
               width: imageWidth,
               height: imageHeight,
@@ -147,6 +149,8 @@ class MedicationDetailsPageState extends State<MedicationDetailsPage> {
                     ],
                   ),
                 ),
+
+                // Edit button
                 Container(
                   width: 40,
                   height: 40,
@@ -169,6 +173,7 @@ class MedicationDetailsPageState extends State<MedicationDetailsPage> {
                       color: Colors.red,
                     ),
                     onPressed: () {
+                      // Navigate to the HomeScreen for editing
                       Navigator.push(
                         context,
                         MaterialPageRoute(
