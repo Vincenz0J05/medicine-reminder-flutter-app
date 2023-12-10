@@ -46,13 +46,15 @@ class _HomeScreenState extends State<HomeScreen> {
     'assets/images/white-tablet.png',
   ];
 
-  final TextEditingController _medicationNameController = TextEditingController();
+  final TextEditingController _medicationNameController =
+      TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
   final TextEditingController _doseController = TextEditingController();
   List<String> _selectedDays = [];
   List<Timestamp> _reminderTimes = [];
   String selectedImageUrl = '';
 
+  DateTime _selectedDate = DateTime.now(); // Add this line
   void _showFormBottomSheet() {
     showModalBottomSheet(
       context: context,
@@ -76,23 +78,29 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  @override
-void initState() {
-  super.initState();
-  if (widget.medicineToEdit != null) {
-    _medicationNameController.text = widget.medicineToEdit!.name;
-    _quantityController.text = widget.medicineToEdit!.amount;
-    _doseController.text = widget.medicineToEdit!.dosage;
-    _selectedDays = widget.medicineToEdit!.days;
-    _reminderTimes = widget.medicineToEdit!.reminderTime;
-    selectedImageUrl = widget.medicineToEdit!.image;
-    // Trigger the bottom sheet to show after the build is complete
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showFormBottomSheet();
+  void _onDateSelected(DateTime newDate) {
+    // Add this method
+    setState(() {
+      _selectedDate = newDate;
     });
   }
-}
 
+  @override
+  void initState() {
+    super.initState();
+    if (widget.medicineToEdit != null) {
+      _medicationNameController.text = widget.medicineToEdit!.name;
+      _quantityController.text = widget.medicineToEdit!.amount;
+      _doseController.text = widget.medicineToEdit!.dosage;
+      _selectedDays = widget.medicineToEdit!.days;
+      _reminderTimes = widget.medicineToEdit!.reminderTime;
+      selectedImageUrl = widget.medicineToEdit!.image;
+      // Trigger the bottom sheet to show after the build is complete
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showFormBottomSheet();
+      });
+    }
+  }
 
   Widget _buildMedicationFormSheet(BuildContext context) {
     return SizedBox(
@@ -336,14 +344,20 @@ void initState() {
 
   @override
   Widget build(BuildContext context) {
-    String formattedDate = DateFormat('d MMMM').format(DateTime.now());
+    String formattedDate =
+        DateFormat('d MMMM').format(_selectedDate); // Use _selectedDate
 
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
           children: [
-            DateSelector(formattedDate: formattedDate),
-            const MedicationCard(),
+            DateSelector(
+              formattedDate: formattedDate,
+              onDateSelected: _onDateSelected, // Set up the callback
+            ),
+            MedicationCard(
+                selectedDate:
+                    _selectedDate), // Pass the selected date to MedicationCard
           ],
         ),
       ),
