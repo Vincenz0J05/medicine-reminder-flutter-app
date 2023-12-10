@@ -6,12 +6,19 @@ import 'package:medication_reminder_app/screens/medication_info_screen.dart';
 import '../services/medication_service.dart';
 
 class MedicationCard extends StatelessWidget {
-  const MedicationCard({super.key});
+  final DateTime selectedDate;
+
+  const MedicationCard({
+    super.key,
+    required this.selectedDate,
+  });
 
   @override
   Widget build(BuildContext context) {
+    Stream<QuerySnapshot> medicationStream =
+        MedicationService().fetchMedicine(selectedDate);
     return StreamBuilder<QuerySnapshot>(
-      stream: MedicationService().fetchMedicine(),
+      stream: medicationStream,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
