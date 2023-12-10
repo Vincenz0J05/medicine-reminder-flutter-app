@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class DateSelector extends StatefulWidget {
-  final String formattedDate;
+  final Function(DateTime) onDateSelected; // Add a callback for date selection
+  final String formattedDate; // Add formattedDate as a member variable
 
   const DateSelector({
     super.key,
-    required this.formattedDate,
+    required this.onDateSelected,
+    required this.formattedDate, // Make it required or provide a default value
   });
 
   @override
@@ -14,13 +16,14 @@ class DateSelector extends StatefulWidget {
 }
 
 class DateSelectorState extends State<DateSelector> {
-  bool _isExpanded = true;
   DateTime _selectedDate = DateTime.now();
+  bool _isExpanded = true; // Define the isExpanded variable
 
   void _onDateTap(DateTime date) {
     setState(() {
       _selectedDate = date;
     });
+    widget.onDateSelected(date); // Call the callback with the selected date
   }
 
   Widget _buildDateTile(DateTime date, bool isSelected) {
@@ -87,7 +90,7 @@ class DateSelectorState extends State<DateSelector> {
                   ),
                 ),
                 title: Text(
-                  'Today, ${widget.formattedDate}',
+                  'Today, ${widget.formattedDate}', // Now the formattedDate is passed correctly
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 20.0,
