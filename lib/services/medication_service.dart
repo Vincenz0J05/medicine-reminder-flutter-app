@@ -15,7 +15,9 @@ class MedicationService {
     String dayOfWeek = DateFormat('EEEE').format(date);
 
     // Returns a stream of snapshots containing medicines for the given day.
-    return medicineCollection.where('days', arrayContains: dayOfWeek).snapshots();
+    return medicineCollection
+        .where('days', arrayContains: dayOfWeek)
+        .snapshots();
   }
 
   // Creates a new medicine document in Firestore and returns its ID.

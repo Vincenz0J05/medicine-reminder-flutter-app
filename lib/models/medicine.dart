@@ -41,7 +41,9 @@ class Medicine {
       image: data['image'],
       days: List<String>.from(data['days']),
       reminderTime: data['reminder_time'] is List
-          ? (data['reminder_time'] as List).map((item) => item as Timestamp).toList()
+          ? (data['reminder_time'] as List)
+              .map((item) => item as Timestamp)
+              .toList()
           : [], // Handle it as a list of Timestamps
       amount: data['amount'],
     );

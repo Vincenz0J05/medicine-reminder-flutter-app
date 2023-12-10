@@ -8,10 +8,10 @@ import 'package:medication_reminder_app/services/notification_serivce.dart';
 Future<void> main() async {
   // Ensures that widget binding is initialized before running the app.
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initializes Firebase for the application.
   await Firebase.initializeApp();
-  
+
   // Initializes Awesome Notifications with a basic notification channel.
   await AwesomeNotifications().initialize(null, [
     NotificationChannel(
@@ -25,14 +25,14 @@ Future<void> main() async {
         channelGroupKey: 'basic_channel_group',
         channelGroupName: 'Reminder Group')
   ]);
-  
+
   // Checks if the app is allowed to send notifications and requests permission if not.
   bool isAllowedToSendNotifications =
       await AwesomeNotifications().isNotificationAllowed();
   if (!isAllowedToSendNotifications) {
     await AwesomeNotifications().requestPermissionToSendNotifications();
   }
-  
+
   // Runs the Flutter application.
   runApp(const MyApp());
 }
@@ -50,7 +50,7 @@ class MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    
+
     // Sets listeners for different notification events.
     AwesomeNotifications().setListeners(
       onActionReceivedMethod: NotificationService.onActionReceiveMethod,
@@ -61,7 +61,7 @@ class MyAppState extends State<MyApp> {
       onDismissActionReceivedMethod:
           NotificationService.onDismissActionReceivedMethod,
     );
-    
+
     // Schedule notifications based on the user's medicine intake schedule.
     NotificationService().scheduleNotificationsBasedOnMedicine();
   }

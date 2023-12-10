@@ -5,7 +5,8 @@ Widget inputStyle({
   IconData? prefixIcon, // Optional prefix icon for the text field.
   String? hintText, // Optional hint text for the text field.
   void Function(dynamic value)? onChanged, // Optional onChanged callback.
-  required TextEditingController controller, // Required text controller for the text field.
+  required TextEditingController
+      controller, // Required text controller for the text field.
 }) {
   return TextField(
     onChanged: onChanged, // Assigns the onChanged callback, if provided.
@@ -13,10 +14,13 @@ Widget inputStyle({
     decoration: InputDecoration(
       filled: true, // Enables the fill color for the text field.
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10), // Rounded corners for the text field.
+        borderRadius:
+            BorderRadius.circular(10), // Rounded corners for the text field.
         borderSide: BorderSide.none, // No border side, for a cleaner look.
       ),
-      prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null, // Adds a prefix icon if provided.
+      prefixIcon: prefixIcon != null
+          ? Icon(prefixIcon)
+          : null, // Adds a prefix icon if provided.
       hintText: hintText, // Displays hint text if provided.
     ),
   );

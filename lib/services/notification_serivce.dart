@@ -59,9 +59,11 @@ class NotificationService {
             id: _notificationId++, // Incrementing ID for each notification.
             channelKey: 'basic_channel',
             title: 'Medicijne Herinnering', // Title for the notification.
-            body: '${medicine.dosage} ${medicine.name} innemen.', // Body text for the notification.
+            body:
+                '${medicine.dosage} ${medicine.name} innemen.', // Body text for the notification.
           ),
-          schedule: NotificationCalendar.fromDate(date: scheduledTime), // Scheduling details.
+          schedule: NotificationCalendar.fromDate(
+              date: scheduledTime), // Scheduling details.
         );
       }
     }
