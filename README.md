@@ -45,16 +45,8 @@ Follow these steps to set up the project on your local machine for viewing and t
 - `lib/services`: Services for handling backend logic and Firebase integration.
 - `lib/widgets`: Reusable widgets for the app's UI.
 - `lib/screens`: Screens or pages of the app.
+- `lib/api`: API logic.
 
-## Testing
-
-To run tests, execute the following command in the terminal:
-
-```sh
-flutter test
-```
-
-This command will run all the test cases defined in the project.
 
 ## Notes
 
