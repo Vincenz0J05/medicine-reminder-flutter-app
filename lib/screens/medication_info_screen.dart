@@ -394,10 +394,12 @@ class MedicationDetailsPageState extends State<MedicationDetailsPage> {
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
               const SizedBox(height: 10),
 
-              // ListView.builder to display reminder times with checkboxes
               Container(
                 height: 200,
-                // ... container styling
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(25),
+                  color: const Color(0xFFeff0f4),
+                ),
                 child: ListView.builder(
                   padding: const EdgeInsetsDirectional.only(start: 10, end: 10),
                   itemCount: widget.medicine.reminderTime.length,
