@@ -1,6 +1,12 @@
+import 'dart:convert';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:intl/intl.dart';
 import 'package:medication_reminder_app/screens/home_screen.dart';
 import 'package:medication_reminder_app/services/medication_service.dart';
+import 'package:http/http.dart' as http;
 import '../models/medicine.dart';
 
 class MedicationDetailsPage extends StatefulWidget {
@@ -13,6 +19,109 @@ class MedicationDetailsPage extends StatefulWidget {
 }
 
 class MedicationDetailsPageState extends State<MedicationDetailsPage> {
+  List<bool> checkedState = [];
+
+  @override
+  void initState() {
+    super.initState();
+    checkedState =
+        List<bool>.filled(widget.medicine.reminderTime.length, false);
+  }
+
+  List<String> formatReminderTimes(List<Timestamp> reminderTimes) {
+    return reminderTimes
+        .map((timestamp) => DateFormat('HH:mm').format(timestamp.toDate()))
+        .toList();
+  }
+
+  Future<void> scanBarcodeAndFetchData() async {
+    String barcode;
+    try {
+      barcode = await FlutterBarcodeScanner.scanBarcode(
+          "#ff6666", "Cancel", true, ScanMode.BARCODE);
+      if (barcode == "-1") {
+        barcode = "Scan cancelled";
+      } else {
+        fetchDataFromAPI(barcode);
+      }
+    } catch (e) {
+      print('Barcode scan error: $e');
+    }
+  }
+
+  Future<void> fetchDataFromAPI(String barcode) async {
+    var url = Uri.parse(
+        'https://api.fda.gov/drug/label.json?search=openfda.product_ndc:"$barcode"');
+    try {
+      var response = await http.get(url);
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        showFetchedDataBottomSheet(data); // Call the new function here
+      } else {
+        print('API call failed with status: ${response.statusCode}.');
+      }
+    } catch (e) {
+      print('API call error: $e');
+    }
+  }
+
+  void showFetchedDataBottomSheet(Map<String, dynamic> data) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext bc) {
+        return Container(
+          padding: const EdgeInsets.all(10),
+          child: ListView(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.label),
+                title: const Text('Product Name'),
+                subtitle: Text(data['results'][0]['openfda']['brand_name'][0] ??
+                    'Not available'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.description),
+                title: const Text('Active Ingredient'),
+                subtitle: Text(data['results'][0]['active_ingredient'][0] ??
+                    'Not available'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.category),
+                title: const Text('Purpose'),
+                subtitle:
+                    Text(data['results'][0]['purpose'][0] ?? 'Not available'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.local_hospital),
+                title: const Text('Uses (Indications and Usage)'),
+                subtitle: Text(data['results'][0]['indications_and_usage'][0] ??
+                    'Not available'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.warning),
+                title: const Text('Warnings'),
+                subtitle:
+                    Text(data['results'][0]['warnings'][0] ?? 'Not available'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.not_interested),
+                title: const Text('Do Not Use'),
+                subtitle: Text(
+                    data['results'][0]['do_not_use'][0] ?? 'Not available'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.help_outline),
+                title: const Text('Ask Doctor'),
+                subtitle: Text(
+                    data['results'][0]['ask_doctor'][0] ?? 'Not available'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Get the size of the screen (or parent widget)
@@ -276,62 +385,55 @@ class MedicationDetailsPageState extends State<MedicationDetailsPage> {
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
               const SizedBox(height: 10),
 
-// Fixed height container with scrollable ListView inside
               Container(
-                height: 200, // Set a fixed height for the container
+                height: 200,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(25),
                   color: const Color(0xFFeff0f4),
                 ),
                 child: ListView.builder(
                   padding: const EdgeInsetsDirectional.only(start: 10, end: 10),
-                  itemCount: 10, // Adjust the item count as needed
+                  itemCount: widget.medicine.reminderTime.length,
                   itemBuilder: (context, index) {
+                    String formattedTime =
+                        widget.medicine.reminderTime.isNotEmpty
+                            ? formatReminderTimes(
+                                widget.medicine.reminderTime)[index]
+                            : 'No time set';
+
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            '${(index + 1) * 3 + 7}:00', // Placeholder for time
+                            formattedTime,
                             style: const TextStyle(
                                 color: Color(0xffeb6081),
                                 fontWeight: FontWeight.bold,
                                 fontSize: 18),
                           ),
-                          Transform.scale(
-                            scale: 1,
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Checkbox(
-                                  shape: const CircleBorder(),
-                                  value: false, // Adjust based on your logic
-                                  onChanged: (bool? newValue) {
-                                    // Add your onChanged logic here
-                                  },
-                                  activeColor: Colors.green,
-                                  checkColor: Colors.green,
-                                  materialTapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                const Icon(Icons.check,
-                                    size: 12,
-                                    color: Colors
-                                        .white), // Adjust the size as needed
-                              ],
-                            ),
-                          )
+                          Checkbox(
+                            value: checkedState[index],
+                            onChanged: (bool? newValue) {
+                              setState(() {
+                                checkedState[index] = newValue ?? false;
+                              });
+                            },
+                            activeColor: Colors.green,
+                            checkColor: Colors.white,
+                          ),
                         ],
                       ),
                     );
                   },
                 ),
               ),
+
               const SizedBox(height: 30),
               InkWell(
                 onTap: () {
-                  print('Pill button pressed');
+                  fetchDataFromAPI('50090-4273');
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(
