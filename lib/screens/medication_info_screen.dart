@@ -24,31 +24,36 @@ class MedicationDetailsPageState extends State<MedicationDetailsPage> {
   @override
   void initState() {
     super.initState();
+    // Initialize the checked states for each reminder time to be unchecked (false)
     checkedState =
         List<bool>.filled(widget.medicine.reminderTime.length, false);
   }
 
+  // Converts the list of Timestamps to a list of formatted time strings
   List<String> formatReminderTimes(List<Timestamp> reminderTimes) {
     return reminderTimes
         .map((timestamp) => DateFormat('HH:mm').format(timestamp.toDate()))
         .toList();
   }
 
+  // Function to initiate the barcode scanning process
   Future<void> scanBarcodeAndFetchData() async {
     String barcode;
     try {
+      // Trigger the barcode scanner
       barcode = await FlutterBarcodeScanner.scanBarcode(
           "#ff6666", "Cancel", true, ScanMode.BARCODE);
       if (barcode == "-1") {
-        barcode = "Scan cancelled";
+        print("Scan cancelled"); // Log scan cancellation
       } else {
-        fetchDataFromAPI(barcode);
+        fetchDataFromAPI(barcode); // Fetch data using the scanned barcode
       }
     } catch (e) {
-      print('Barcode scan error: $e');
+      print('Barcode scan error: $e'); // Log any errors during barcode scanning
     }
   }
 
+  // Fetch data from the FDA API using the barcode
   Future<void> fetchDataFromAPI(String barcode) async {
     var url = Uri.parse(
         'https://api.fda.gov/drug/label.json?search=openfda.product_ndc:"$barcode"');
@@ -56,22 +61,26 @@ class MedicationDetailsPageState extends State<MedicationDetailsPage> {
       var response = await http.get(url);
       if (response.statusCode == 200) {
         var data = json.decode(response.body);
-        showFetchedDataBottomSheet(data); // Call the new function here
+        showFetchedDataBottomSheet(
+            data); // Display the fetched data in a bottom sheet
       } else {
         print('API call failed with status: ${response.statusCode}.');
       }
     } catch (e) {
-      print('API call error: $e');
+      print('API call error: $e'); // Log any API call errors
     }
   }
 
+  // Function to show a bottom sheet with the fetched medication data
   void showFetchedDataBottomSheet(Map<String, dynamic> data) {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {
+        // Creating a list of widgets to display medication information
         return Container(
           padding: const EdgeInsets.all(10),
           child: ListView(
+            // List of ListTile widgets to display different pieces of medication data
             children: <Widget>[
               ListTile(
                 leading: const Icon(Icons.label),
@@ -385,22 +394,22 @@ class MedicationDetailsPageState extends State<MedicationDetailsPage> {
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
               const SizedBox(height: 10),
 
+              // ListView.builder to display reminder times with checkboxes
               Container(
                 height: 200,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(25),
-                  color: const Color(0xFFeff0f4),
-                ),
+                // ... container styling
                 child: ListView.builder(
                   padding: const EdgeInsetsDirectional.only(start: 10, end: 10),
                   itemCount: widget.medicine.reminderTime.length,
                   itemBuilder: (context, index) {
+                    // Formatting each reminder time for display
                     String formattedTime =
                         widget.medicine.reminderTime.isNotEmpty
                             ? formatReminderTimes(
                                 widget.medicine.reminderTime)[index]
                             : 'No time set';
 
+                    // Row for each reminder time with a corresponding checkbox
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Row(
@@ -416,6 +425,7 @@ class MedicationDetailsPageState extends State<MedicationDetailsPage> {
                           Checkbox(
                             value: checkedState[index],
                             onChanged: (bool? newValue) {
+                              // Update the state when the checkbox is toggled
                               setState(() {
                                 checkedState[index] = newValue ?? false;
                               });
